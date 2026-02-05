@@ -8,17 +8,37 @@
 <script>
 const ws = new WebSocket("wss://yap-talk-production.up.railway.app");
 
+// Wait for connection to open
+ws.onopen = () => {
+    console.log("Connected to server!");
+};
+
 ws.onmessage = e => {
-  const li = document.createElement("li");
-  li.textContent = e.data;
-  document.getElementById("chat").appendChild(li);
+    const li = document.createElement("li");
+    li.textContent = e.data;
+    document.getElementById("chat").appendChild(li);
+};
+
+ws.onerror = e => {
+    console.log("WebSocket error:", e);
+};
+
+ws.onclose = e => {
+    console.log("WebSocket closed:", e);
 };
 
 function send() {
-  ws.send(msg.value);
-  msg.value = "";
+    const msgInput = document.getElementById("msg");
+    if (ws.readyState === WebSocket.OPEN) {   // <- check before sending
+        ws.send(msgInput.value);
+        msgInput.value = "";
+    } else {
+        alert("Connection not open yet. Wait a moment.");
+    }
 }
 </script>
+
 </body>
 </html>
+
 
