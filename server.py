@@ -1,8 +1,10 @@
 import os
 import asyncio
 import websockets
+from http import HTTPStatus
+from urllib.parse import urlparse
 
-PORT = int(os.environ.get("PORT", 8000))  # Railway assigns this automatically
+PORT = int(os.environ.get("PORT", 8000))
 clients = set()
 
 async def chat(websocket):
@@ -15,8 +17,16 @@ async def chat(websocket):
     finally:
         clients.remove(websocket)
 
+async def handler(websocket, path):
+    # Only handle WebSocket upgrade requests
+    if websocket.request_headers.get("Upgrade", "").lower() != "websocket":
+        # Normal HTTP request → respond with a simple page
+        await websocket.send("Hello! This is a WebSocket server. Use a WebSocket client to connect.")
+        return
+    await chat(websocket)
+
 async def main():
-    async with websockets.serve(chat, "0.0.0.0", PORT):
-        await asyncio.Future()  # run forever
+    async with websockets.serve(handler, "0.0.0.0", PORT):
+        await asyncio.Future()
 
 asyncio.run(main())
