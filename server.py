@@ -1,9 +1,8 @@
 import os
-PORT = int(os.environ.get("PORT", 8000))  # gets Railway’s assigned port
-
 import asyncio
 import websockets
 
+PORT = int(os.environ.get("PORT", 8000))  # Railway assigns this automatically
 clients = set()
 
 async def chat(websocket):
