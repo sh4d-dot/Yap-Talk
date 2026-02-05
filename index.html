@@ -6,7 +6,7 @@
 <ul id="chat"></ul>
 
 <script>
-const ws = new WebSocket("wss://YOUR_SERVER_IP:8000");
+const ws = new WebSocket("wss://yap-talk-production.up.railway.app");
 
 ws.onmessage = e => {
   const li = document.createElement("li");
@@ -21,3 +21,4 @@ function send() {
 </script>
 </body>
 </html>
+
