@@ -5,6 +5,7 @@ import websockets
 PORT = int(os.environ.get("PORT", 8000))
 clients = set()
 
+# Chat logic stays here
 async def chat(websocket):
     clients.add(websocket)
     try:
@@ -15,12 +16,13 @@ async def chat(websocket):
     finally:
         clients.remove(websocket)
 
-# handler must have 2 arguments: websocket and path
+# This handler MUST have 2 arguments: websocket, path
 async def handler(websocket, path):
     await chat(websocket)
 
+# Start server with dynamic Railway port
 async def main():
     async with websockets.serve(handler, "0.0.0.0", PORT):
-        await asyncio.Future()  # keep server running forever
+        await asyncio.Future()  # run forever
 
 asyncio.run(main())
