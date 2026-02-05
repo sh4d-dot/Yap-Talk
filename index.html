@@ -1,40 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yap Talk Chat</title>
+<style>
+  /* Modern, clean design */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f6fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  #chat-container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    height: 600px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #chat {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .message {
+    padding: 10px 15px;
+    border-radius: 20px;
+    background: #e1e4e8;
+    max-width: 70%;
+    word-wrap: break-word;
+    align-self: flex-start;
+  }
+
+  .message.mine {
+    background: #4e9af1;
+    color: #fff;
+    align-self: flex-end;
+  }
+
+  #input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    gap: 10px;
+  }
+
+  #msg {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 16px;
+  }
+
+  #sendBtn {
+    background: #4e9af1;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+  }
+
+  #sendBtn:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  #sendBtn:hover:not(:disabled) {
+    background: #3578e5;
+  }
+</style>
+</head>
 <body>
-<h2>Mini Chat</h2>
-<input id="msg" placeholder="Type message">
-<button id="sendBtn" disabled>Send</button>
-<ul id="chat"></ul>
+
+<div id="chat-container">
+  <div id="chat"></div>
+  <div id="input-container">
+    <input id="msg" placeholder="Type your message...">
+    <button id="sendBtn" disabled>Send</button>
+  </div>
+</div>
 
 <script>
 const ws = new WebSocket("wss://yap-talk-production.up.railway.app");
+const chat = document.getElementById("chat");
+const sendBtn = document.getElementById("sendBtn");
+const msgInput = document.getElementById("msg");
 
-// Only allow sending after connection opens
+// Enable send button when connected
 ws.onopen = () => {
     console.log("Connected to server!");
-    document.getElementById("sendBtn").disabled = false;  // Enable button
+    sendBtn.disabled = false;
 };
 
+// Add incoming messages
 ws.onmessage = e => {
-    const li = document.createElement("li");
+    const li = document.createElement("div");
     li.textContent = e.data;
-    document.getElementById("chat").appendChild(li);
+    li.className = "message"; // Messages from other user
+    chat.appendChild(li);
+    chat.scrollTop = chat.scrollHeight;
 };
 
-ws.onerror = e => {
-    console.log("WebSocket error:", e);
+// Disable button if connection closes
+ws.onclose = () => {
+    sendBtn.disabled = true;
+    const notice = document.createElement("div");
+    notice.textContent = "Disconnected from server";
+    notice.style.textAlign = "center";
+    notice.style.color = "#888";
+    chat.appendChild(notice);
 };
 
-ws.onclose = e => {
-    console.log("WebSocket closed:", e);
-    document.getElementById("sendBtn").disabled = true; // Disable button if disconnected
-};
-
+// Send message function
 function send() {
-    const msgInput = document.getElementById("msg");
-    ws.send(msgInput.value);
-    msgInput.value = "";
+    if(ws.readyState === WebSocket.OPEN && msgInput.value.trim() !== ""){
+        ws.send(msgInput.value);
+        
+        // Add own message to chat
+        const li = document.createElement("div");
+        li.textContent = msgInput.value;
+        li.className = "message mine";
+        chat.appendChild(li);
+        chat.scrollTop = chat.scrollHeight;
+
+        msgInput.value = "";
+    }
 }
+
+// Send message on button click
+sendBtn.onclick = send;
+
+// Also send message on Enter key
+msgInput.addEventListener("keypress", e => {
+    if(e.key === "Enter") send();
+});
 </script>
+
 </body>
 </html>
