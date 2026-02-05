@@ -1,6 +1,8 @@
+import os
+PORT = int(os.environ.get("PORT", 8000))
+
 import asyncio
 import websockets
-import os
 
 clients = set()
 
@@ -15,9 +17,7 @@ async def chat(websocket):
         clients.remove(websocket)
 
 async def main():
-    PORT = int(os.environ.get("PORT", 8000))
     async with websockets.serve(chat, "0.0.0.0", PORT):
         await asyncio.Future()  # run forever
 
 asyncio.run(main())
-
