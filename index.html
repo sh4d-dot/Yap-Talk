@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
 <body>
+<h2>Mini Chat</h2>
 <input id="msg" placeholder="Type message">
-<button onclick="send()">Send</button>
+<button id="sendBtn" disabled>Send</button>
 <ul id="chat"></ul>
 
 <script>
 const ws = new WebSocket("wss://yap-talk-production.up.railway.app");
 
-// Wait for connection to open
+// Only allow sending after connection opens
 ws.onopen = () => {
     console.log("Connected to server!");
+    document.getElementById("sendBtn").disabled = false;  // Enable button
 };
 
 ws.onmessage = e => {
@@ -25,20 +27,14 @@ ws.onerror = e => {
 
 ws.onclose = e => {
     console.log("WebSocket closed:", e);
+    document.getElementById("sendBtn").disabled = true; // Disable button if disconnected
 };
 
 function send() {
     const msgInput = document.getElementById("msg");
-    if (ws.readyState === WebSocket.OPEN) {   // <- check before sending
-        ws.send(msgInput.value);
-        msgInput.value = "";
-    } else {
-        alert("Connection not open yet. Wait a moment.");
-    }
+    ws.send(msgInput.value);
+    msgInput.value = "";
 }
 </script>
-
 </body>
 </html>
-
-
